@@ -16,15 +16,21 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const { user, loading, logout } = useAuth();
   const router = useRouter();
 
   const dashboardHref = user?.role === "admin" ? "/admin" : "/dashboard";
 
   const handleLogout = async () => {
-    await logout();
-    setOpen(false);
-    router.push("/");
+    setLogoutError("");
+    try {
+      await logout();
+      setOpen(false);
+      router.push("/");
+    } catch (err) {
+      setLogoutError(err.message);
+    }
   };
 
   return (
@@ -69,6 +75,12 @@ export default function Navbar() {
           {open ? "✕" : "☰"}
         </button>
       </nav>
+
+      {logoutError && (
+        <p role="alert" className="mx-auto max-w-6xl px-4 pb-2 text-sm text-red-300">
+          {logoutError}
+        </p>
+      )}
 
       {open && (
         <div className="border-t border-line px-4 pb-4 md:hidden">

@@ -25,6 +25,7 @@ export const getAdminCourses = (params) => apiRequest(`/admin/courses${qs(params
 export const getAdminCourse = (id) => apiRequest(`/admin/courses/${id}`);
 export const createCourse = (body) => send("POST", "/admin/courses", body);
 export const updateCourse = (id, body) => send("PUT", `/admin/courses/${id}`, body);
+export const updateCourseContent = (id, body) => send("PUT", `/admin/courses/${id}/content`, body);
 export const setCourseStatus = (id, status) => send("PATCH", `/admin/courses/${id}/status`, { status });
 export const deleteCourse = (id) => send("DELETE", `/admin/courses/${id}`);
 

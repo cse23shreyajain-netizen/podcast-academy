@@ -32,8 +32,22 @@ export default function AdminInstructorsPage() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    getInstructors({ limit: 50 })
+      .then((res) => {
+        if (active) setInstructors(res.data.users);
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const reset = () => { setForm(empty); setEditingId(null); };
 

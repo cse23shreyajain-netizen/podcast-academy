@@ -32,8 +32,22 @@ export default function AdminCategoriesPage() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    getAdminCategories()
+      .then((res) => {
+        if (active) setCategories(res.data.categories);
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const reset = () => { setForm(empty); setEditingId(null); };
 

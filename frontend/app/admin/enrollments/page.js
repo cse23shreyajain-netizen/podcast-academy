@@ -16,11 +16,12 @@ export default function AdminEnrollmentsPage() {
   const [data, setData] = useState({ enrollments: [], pagination: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filterError, setFilterError] = useState("");
 
   useEffect(() => {
     getAdminCourses({ limit: 50 })
       .then((res) => setCourses(res.data.courses))
-      .catch(() => {});
+      .catch((err) => setFilterError(err.message));
   }, []);
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function AdminEnrollmentsPage() {
       </div>
 
       <div className="mt-4">
+        {filterError && <Alert>{filterError}</Alert>}
         {error && <Alert>{error}</Alert>}
         {loading ? <p className="text-muted">Loading...</p> : <DataTable columns={columns} rows={data.enrollments} empty="No enrolments found." />}
         <Pagination page={page} pages={data.pagination?.pages} onChange={setPage} />

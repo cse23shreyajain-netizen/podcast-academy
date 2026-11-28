@@ -21,8 +21,25 @@ export default function useEnrollments() {
   }, []);
 
   useEffect(() => {
-    reload();
-  }, [reload]);
+    let active = true;
+    getMyEnrollments()
+      .then((res) => {
+        if (active) {
+          setEnrollments(res.data.enrollments.filter((e) => e.course));
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return { enrollments, loading, error, reload };
 }

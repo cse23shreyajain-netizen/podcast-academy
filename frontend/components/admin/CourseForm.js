@@ -43,7 +43,7 @@ export default function CourseForm({ initial, onSubmit, submitLabel }) {
   useEffect(() => {
     getCategories()
       .then((res) => setCategories(res.data.categories))
-      .catch(() => {});
+      .catch((err) => setFormError(err.message));
   }, []);
 
   const set = (e) => setForm({ ...form, [e.target.name]: e.target.value });

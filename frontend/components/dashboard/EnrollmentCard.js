@@ -38,8 +38,8 @@ export default function EnrollmentCard({ enrollment }) {
         <ProgressBar value={progress} />
       </div>
 
-      <Link href={`/courses/${course.slug}`} className="mt-4 inline-block text-sm font-semibold text-amber-dark hover:underline">
-        View course details →
+      <Link href={`/dashboard/courses/${enrollment._id}`} className="mt-4 inline-block text-sm font-semibold text-amber-dark hover:underline">
+        {enrollment.courseHasLessons ? "Continue learning →" : "View course details →"}
       </Link>
     </article>
   );

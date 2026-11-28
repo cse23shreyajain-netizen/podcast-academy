@@ -38,8 +38,25 @@ export default function AdminCoursesPage() {
   }, [debounced, status, page]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    getAdminCourses({ search: debounced, status, page, limit: 10 })
+      .then((res) => {
+        if (active) {
+          setData(res.data);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [debounced, status, page]);
 
   const togglePublish = async (c) => {
     setMessage("");
@@ -73,6 +90,7 @@ export default function AdminCoursesPage() {
     { key: "actions", label: "Actions", render: (c) => (
       <div className="flex flex-wrap gap-3 text-sm font-semibold">
         <Link href={`/admin/courses/${c._id}/edit`} className="underline">Edit</Link>
+        <Link href={`/admin/courses/${c._id}/content`} className="underline">Lessons</Link>
         <button onClick={() => togglePublish(c)} className="text-amber-dark hover:underline">
           {c.status === "published" ? "Unpublish" : "Publish"}
         </button>

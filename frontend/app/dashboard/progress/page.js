@@ -6,6 +6,7 @@ import { updateProgress } from "../../../services/enrollmentService";
 import ProgressBar from "../../../components/ui/ProgressBar";
 import Button from "../../../components/ui/Button";
 import Alert from "../../../components/ui/Alert";
+import Link from "next/link";
 
 function ProgressRow({ enrollment, onSaved }) {
   const [value, setValue] = useState(enrollment.progress);
@@ -33,17 +34,23 @@ function ProgressRow({ enrollment, onSaved }) {
       </div>
       <div className="mt-3"><ProgressBar value={enrollment.progress} /></div>
 
-      <div className="mt-4 flex items-center gap-4">
-        <input
-          type="range" min="0" max="100" step="5"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          aria-label={`Set progress for ${enrollment.course.title}`}
-          className="w-full accent-amber"
-        />
-        <span className="w-12 text-sm">{value}%</span>
-        <Button onClick={save} loading={saving} className="!py-2">Save</Button>
-      </div>
+      {enrollment.courseHasLessons ? (
+        <Link href={`/dashboard/courses/${enrollment._id}`} className="mt-4 inline-block text-sm font-semibold text-amber-dark underline">
+          Progress is based on completed lessons. Continue learning →
+        </Link>
+      ) : (
+        <div className="mt-4 flex items-center gap-4">
+          <input
+            type="range" min="0" max="100" step="5"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            aria-label={`Set progress for ${enrollment.course.title}`}
+            className="w-full accent-amber"
+          />
+          <span className="w-12 text-sm">{value}%</span>
+          <Button onClick={save} loading={saving} className="!py-2">Save</Button>
+        </div>
+      )}
       {error && <div className="mt-3"><Alert>{error}</Alert></div>}
     </article>
   );

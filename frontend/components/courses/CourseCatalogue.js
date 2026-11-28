@@ -23,7 +23,7 @@ export default function CourseCatalogue() {
   useEffect(() => {
     getCategories()
       .then((res) => setCategories(res.data.categories))
-      .catch(() => {});
+      .catch((err) => setError(err.message));
   }, []);
 
   // Search: typing rukne ke 400ms baad hi API call
@@ -37,8 +37,6 @@ export default function CourseCatalogue() {
 
   useEffect(() => {
     let ignore = false;
-    setLoading(true);
-    setError("");
     getCourses({ search: debouncedSearch, category, level, page, limit: LIMIT })
       .then((res) => { if (!ignore) setData(res.data); })
       .catch((err) => { if (!ignore) setError(err.message); })
@@ -46,9 +44,20 @@ export default function CourseCatalogue() {
     return () => { ignore = true; };
   }, [debouncedSearch, category, level, page]);
 
-  const changeCategory = (slug) => { setCategory(slug); setPage(1); };
-  const changeLevel = (e) => { setLevel(e.target.value); setPage(1); };
-  const clearFilters = () => { setSearch(""); setCategory(""); setLevel(""); setPage(1); };
+  const startLoading = () => {
+    setLoading(true);
+    setError("");
+  };
+  const changeCategory = (slug) => { startLoading(); setCategory(slug); setPage(1); };
+  const changeLevel = (e) => { startLoading(); setLevel(e.target.value); setPage(1); };
+  const changePage = (nextPage) => { startLoading(); setPage(nextPage); };
+  const clearFilters = () => {
+    startLoading();
+    setSearch("");
+    setCategory("");
+    setLevel("");
+    setPage(1);
+  };
 
   const chip = (active) =>
     `rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
@@ -63,7 +72,7 @@ export default function CourseCatalogue() {
           aria-label="Search courses"
           placeholder="Search courses..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { startLoading(); setSearch(e.target.value); }}
           className="w-full rounded-lg border border-ink/20 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-amber"
         />
         <select
@@ -108,7 +117,7 @@ export default function CourseCatalogue() {
           </div>
         )}
 
-        <Pagination page={page} pages={data.pagination?.pages} onChange={setPage} />
+        <Pagination page={page} pages={data.pagination?.pages} onChange={changePage} />
       </div>
     </div>
   );

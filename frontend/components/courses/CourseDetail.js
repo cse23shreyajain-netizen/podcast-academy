@@ -16,6 +16,7 @@ export default function CourseDetail({ slug }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [enrolled, setEnrolled] = useState(false);
+  const [enrollmentId, setEnrollmentId] = useState("");
   const [enrolling, setEnrolling] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -29,9 +30,21 @@ export default function CourseDetail({ slug }) {
   // Student ke liye: pehle se enrolled hai?
   useEffect(() => {
     if (!course || user?.role !== "student") return;
+    let active = true;
     getMyEnrollments()
-      .then((res) => setEnrolled(res.data.enrollments.some((e) => e.course?._id === course._id)))
-      .catch(() => {});
+      .then((res) => {
+        if (!active) return;
+        const enrollment = res.data.enrollments.find((e) => e.course?._id === course._id);
+        setEnrolled(Boolean(enrollment));
+        setEnrollmentId(enrollment?._id || "");
+      })
+      .catch((err) => {
+        if (active) setMessage({ type: "error", text: err.message });
+      });
+
+    return () => {
+      active = false;
+    };
   }, [course, user]);
 
   const handleEnroll = async () => {
@@ -39,8 +52,9 @@ export default function CourseDetail({ slug }) {
     setEnrolling(true);
     setMessage({ type: "", text: "" });
     try {
-      await enrollInCourse(course._id);
+      const res = await enrollInCourse(course._id);
       setEnrolled(true);
+      setEnrollmentId(res.data.enrollment._id);
       setMessage({ type: "success", text: "You are now enrolled in this course." });
     } catch (err) {
       if (err.status === 409) setEnrolled(true);
@@ -109,6 +123,23 @@ export default function CourseDetail({ slug }) {
               </ol>
             </section>
           )}
+
+          {course.modules?.length > 0 && (
+            <section className="mt-8">
+              <h2 className="font-display text-xl font-semibold">Course modules</h2>
+              <ol className="mt-3 space-y-3">
+                {course.modules.map((courseModule, index) => (
+                  <li key={courseModule.id} className="rounded-xl border border-ink/10 bg-white p-4">
+                    <p className="font-semibold">{index + 1}. {courseModule.title}</p>
+                    <p className="mt-1 text-sm text-muted">{courseModule.description}</p>
+                    <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-muted">
+                      {courseModule.lessons.map((lesson) => <li key={lesson.id}>{lesson.title}</li>)}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
         </div>
 
         <aside className="h-fit rounded-xl border border-ink/10 bg-white p-6">
@@ -123,7 +154,9 @@ export default function CourseDetail({ slug }) {
             {authLoading ? null : user && user.role !== "student" ? (
               <p className="text-sm text-muted">Only student accounts can enrol.</p>
             ) : enrolled ? (
-              <Button href="/dashboard" variant="secondary" className="w-full">Go to dashboard</Button>
+              <Button href={enrollmentId ? `/dashboard/courses/${enrollmentId}` : "/dashboard/courses"} variant="secondary" className="w-full">
+                {course.modules?.length ? "Continue learning" : "Go to my courses"}
+              </Button>
             ) : (
               <Button onClick={handleEnroll} loading={enrolling} className="w-full">
                 {user ? "Enrol now" : "Login to enrol"}

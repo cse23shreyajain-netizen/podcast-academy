@@ -29,8 +29,25 @@ export default function AdminStudentsPage() {
   }, [debounced, page]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    getStudents({ search: debounced, page, limit: 10 })
+      .then((res) => {
+        if (active) {
+          setData(res.data);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [debounced, page]);
 
   const toggleStatus = async (u) => {
     const next = u.status === "active" ? "inactive" : "active";
